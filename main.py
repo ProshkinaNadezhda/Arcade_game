@@ -15,6 +15,7 @@ class MyHeros:
         self.health = None
         self.radius = None
 
+
 class Cat(MyHeros):
     def __init__(self):
         super().__init__()
@@ -22,6 +23,7 @@ class Cat(MyHeros):
         self.path = "cat.png"
         self.health = 3
         self.radius = 1
+
 
 class Kangaroo(MyHeros):
     def __init__(self):
@@ -31,6 +33,7 @@ class Kangaroo(MyHeros):
         self.health = 3
         self.radius = 1
 
+
 class Leopard(MyHeros):
     def __init__(self):
         super().__init__()
@@ -38,6 +41,7 @@ class Leopard(MyHeros):
         self.path = "leopard.png"
         self.health = 3
         self.radius = 1
+
 
 class Shark(MyHeros):
     def __init__(self):
@@ -47,6 +51,7 @@ class Shark(MyHeros):
         self.health = 3
         self.radius = 1
 
+
 class Snake(MyHeros):
     def __init__(self):
         super().__init__()
@@ -55,7 +60,29 @@ class Snake(MyHeros):
         self.health = 3
         self.radius = 1
 
+
+class Button:
+    def __init__(self, lb, rb, action):
+        self.lb = lb
+        self.rb = rb
+        self.action = action
+
+    def check_click(self, x, y):
+        if (x > self.lb[0]) and (x < self.rb[0]) and (y > self.lb[1]) and (y < self.rb[1]):
+            return self.action
+
+
 class Menu(arcade.View):
+    def __init__(self):
+        super().__init__()
+        s = SCREEN_WIDTH / 2
+        h1 = 23 * SCREEN_HEIGHT / 40
+        h2 = 17 * SCREEN_HEIGHT / 40
+        self.rules = Rules(self)
+        self.init_characters = InitCharacters(self)
+        self.buttons = [Button((s - 175.5, h2 - 22.5), (s + 175.5, h2 + 22.5), self.rules),
+                        Button((s - 175.5, h1 - 22.5), (s + 175.5, h1 + 22.5), self.init_characters)]
+
     def on_show(self):
         arcade.set_background_color((152, 119, 123))
 
@@ -65,23 +92,24 @@ class Menu(arcade.View):
         arcade.draw_text("PLAY", SCREEN_WIDTH / 2, 23 * SCREEN_HEIGHT / 40,
                          arcade.color.BLACK, font_size=40, anchor_x="center", anchor_y="center")
         arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, 17 * SCREEN_HEIGHT / 40, 350, 45, (240, 220, 130))
-        arcade.draw_text("INSTRUCTIONS", SCREEN_WIDTH / 2, 17 * SCREEN_HEIGHT / 40,
+        arcade.draw_text("RULES", SCREEN_WIDTH / 2, 17 * SCREEN_HEIGHT / 40,
                          arcade.color.BLACK, font_size=40, anchor_x="center", anchor_y="center")
 
     def on_mouse_press(self, _x, _y, button, modifiers):
-        s = SCREEN_WIDTH / 2
+        for i in self.buttons:
+            k = i.check_click(_x, _y)
+            if k:
+                self.window.show_view(k)
 
-        h1 = 23 * SCREEN_HEIGHT / 40
-        if (_y < h1 + 22.5) and (_y > h1 - 22.5) and (_x < s + 175.5) and (_x > s - 175.5):
-            sample = Sample()
-            self.window.show_view(sample)
 
-        h2 = 17 * SCREEN_HEIGHT / 40
-        if (_y < h2 + 22.5) and (_y > h2 - 22.5) and (_x < s + 175.5) and (_x > s - 175.5):
-            instruction = Instruction()
-            self.window.show_view(instruction)
+class Rules(arcade.View):
+    def __init__(self, menu):
+        super().__init__()
+        h = SCREEN_HEIGHT / 30
+        s = SCREEN_WIDTH / 10
+        self.menu = menu
+        self.button = Button((s - 505, h - 25), (s + 50, h + 25), self.menu)
 
-class Instruction(arcade.View):
     def on_show(self):
         arcade.set_background_color((152, 119, 123))
 
@@ -97,15 +125,21 @@ class Instruction(arcade.View):
         f.close()
 
     def on_mouse_press(self, _x, _y, _button, _modifiers):
-        h = SCREEN_HEIGHT / 30
-        s = SCREEN_WIDTH / 10
-        if (_y < h + 25) and (_y > h - 25) and (_x < s + 50) and (_x > s - 50):
-            menu = Menu()
-            self.window.show_view(menu)
+        k = self.button.check_click(_x, _y)
+        if k:
+            self.window.show_view(k)
 
-class Sample(arcade.View):
-    def __init__(self):
+
+class InitCharacters(arcade.View):
+    def __init__(self, menu):
         super().__init__()
+        x = 6 * (WIDTH + MARGIN) + (WIDTH / 2 + MARGIN)
+        y = HEIGHT / 2 + MARGIN
+        c = HEIGHT // 2
+        w = WIDTH / 2 + MARGIN
+        self.menu = menu
+        self.buttons = [Button((x - c, y - c), (x + c, y + c), MyGame(self.menu)),
+                        Button((w - c, y - c), (w + c, y + c), menu)]
 
         arcade.set_background_color((152, 119, 123))
 
@@ -115,21 +149,21 @@ class Sample(arcade.View):
         self.grid_sprites = []
         self.heros = []
 
-        NEW_W = WIDTH // 2
-        NEW_H = HEIGHT // 2
-        NEW_S = (NEW_W + MARGIN) * COLUMN_COUNT + MARGIN
-        CONST = SCREEN_WIDTH // 2 - NEW_S // 2
+        new_w = WIDTH // 2
+        new_h = HEIGHT // 2
+        new_s = (new_w + MARGIN) * COLUMN_COUNT + MARGIN
+        const = SCREEN_WIDTH // 2 - new_s // 2
 
         for row in range(ROW_COUNT):
             self.grid_sprites.append([])
             for column in range(COLUMN_COUNT):
-                x = column * (NEW_W + MARGIN) + (NEW_W / 2 + MARGIN) + CONST
-                y = row * (NEW_H + MARGIN) + (NEW_H / 2 + MARGIN) + CONST
-                if (row == 3):
+                x = column * (new_w + MARGIN) + (new_w / 2 + MARGIN) + const
+                y = row * (new_h + MARGIN) + (new_h / 2 + MARGIN) + const
+                if row == 3:
                     color = (240, 220, 130)
                 else:
                     color = (191, 79, 81)
-                sprite = arcade.SpriteSolidColor(NEW_W, NEW_H, color)
+                sprite = arcade.SpriteSolidColor(new_w, new_h, color)
                 sprite.center_x = x
                 sprite.center_y = y
                 self.grid_sprite_list.append(sprite)
@@ -146,22 +180,12 @@ class Sample(arcade.View):
                 sprite.center_y = y
                 self.grid_sprite_list.append(sprite)
                 self.grid_heros[row].append(sprite)
-                if (row == 2):
-                    self.cat = arcade.Sprite(Cat().path, Cat().size, center_x=x, center_y=y)
-                    self.heros_list.append(self.cat)
-                if (row == 3):
-                    self.kangaroo = arcade.Sprite(Kangaroo().path, Kangaroo().size, center_x=x, center_y=y)
-                    self.heros_list.append(self.kangaroo)
-                if (row == 4):
-                    self.leopard = arcade.Sprite(Leopard().path, Leopard().size, center_x=x, center_y=y)
-                    self.heros_list.append(self.leopard)
-                if (row == 5):
-                    self.shark = arcade.Sprite(Shark().path, Shark().size, center_x=x, center_y=y)
-                    self.heros_list.append(self.shark)
-                if (row == 6):
-                    self.snake = arcade.Sprite(Snake().path, Snake().size, center_x=x, center_y=y)
-                    self.heros_list.append(self.snake)
-
+                animal = [Cat(), Kangaroo(), Leopard(), Shark(), Snake()]
+                for i in range(2, 7):
+                    if row == i:
+                        self.heros_list.append(arcade.Sprite(animal[i - 2].path,
+                                                             animal[i - 2].size,
+                                                             center_x=x, center_y=y))
 
     def on_draw(self):
         arcade.start_render()
@@ -172,24 +196,16 @@ class Sample(arcade.View):
         arcade.draw_text("Finish", 12 * SCREEN_WIDTH / 13, SCREEN_HEIGHT / 25,
                          arcade.color.BLACK, font_size=25, anchor_x="center")
 
-
     def on_mouse_press(self, _x, _y, _button, _modifiers):
-        x = 6 * (WIDTH + MARGIN) + (WIDTH / 2 + MARGIN)
-        y = HEIGHT / 2 + MARGIN
-        c = HEIGHT // 2
-        if (_x < x + c) and (_x > x - c) and (_y < y + c) and (_y > y - c):
-            my_game = MyGame()
-            my_game.setup()
-            self.window.show_view(my_game)
-        x = WIDTH / 2 + MARGIN
-        if (_x < x + c) and (_x > x - c) and (_y < y + c) and (_y > y - c):
-            menu = Menu()
-            self.window.show_view(menu)
+        for i in self.buttons:
+            k = i.check_click(_x, _y)
+            if k:
+                self.window.show_view(k)
 
         c_b = int(_x // (WIDTH + MARGIN))
         r_b = int(_y // (HEIGHT + MARGIN))
 
-        if r_b < ROW_COUNT and r_b > 1 and ((c_b == 0) or (c_b == 6)):
+        if r_b in range(2, ROW_COUNT) and (c_b == 0 or c_b == 6):
             if c_b == 6:
                 c_b = 1
             if self.grid_heros[r_b][c_b].color == arcade.color.WHITE:
@@ -199,10 +215,13 @@ class Sample(arcade.View):
 
 
 class MyGame(arcade.View):
-    def __init__(self):
+    def __init__(self, menu):
         super().__init__()
 
         arcade.set_background_color((152, 119, 123))
+
+        self.menu = menu
+        self.button = Button((50, 25), (50, 25), self.menu)
 
         self.grid_sprite_list = arcade.SpriteList()
 
@@ -218,8 +237,6 @@ class MyGame(arcade.View):
                 sprite.center_y = y
                 self.grid_sprite_list.append(sprite)
                 self.grid_sprites[row].append(sprite)
-
-
 
     def setup(self):
         # Настроить игру здесь
@@ -245,6 +262,7 @@ def main():
     menu = Menu()
     window.show_view(menu)
     arcade.run()
+
 
 if __name__ == "__main__":
     main()
