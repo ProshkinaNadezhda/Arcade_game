@@ -146,7 +146,7 @@ class InitCharacters(arcade.View):
                                     (1, 5), (240, 220, 130)), (119, 158, 203))
 
         self.buttons = [(Button((x2 - c, MARGIN), (x2 + c, MARGIN + HEIGHT), (HEIGHT, HEIGHT), (240, 220, 130)),
-                         MyGame(self.menu, self.game_field)),
+                         MyGame(self.game_field)),
                         (Button((x1 - c, MARGIN), (x1 + c, MARGIN + HEIGHT), (HEIGHT, HEIGHT), (240, 220, 130)),
                          self.menu)]
 
@@ -232,17 +232,12 @@ class InitCharacters(arcade.View):
 
 
 class MyGame(arcade.View):
-    def __init__(self, menu, game_field):
+    def __init__(self, game_field):
         super().__init__()
 
         arcade.set_background_color((152, 119, 123))
 
-        self.sq = NoHero
-        self.c_x = 0
-        self.c_y = 0
-        self.team_color = 0
-
-        self.menu = menu
+        self.sq, self.c_x, self.c_y, self.team_color = NoHero, 0, 0, 0
         self.game_field = game_field
 
     def on_draw(self):
@@ -259,7 +254,7 @@ class MyGame(arcade.View):
                              arcade.color.BLACK, font_size=20, anchor_x="center", anchor_y="center")
 
     def on_key_press(self, symbol: int, modifiers: int):
-        self.window.show_view(self.menu)
+        self.window.show_view(Menu())
 
     def on_mouse_press(self, x, y, button, modifiers):
         param = self.game_field.check_click(x, y)
@@ -268,17 +263,21 @@ class MyGame(arcade.View):
             return
         if param.animal != NoHero and self.sq == NoHero:
             self.sq, self.team_color, self.c_x, self.c_y = param, param.color, x, y
+            self.make_backlight(x, y, param.animal.radius)
         elif param.animal == NoHero and self.sq != NoHero:
             if self.check_distance(self.sq.animal.radius, self.c_x, self.c_y, x, y):
+                self.delete_backlight(self.c_x, self.c_y, self.sq.animal.radius)
                 self.game_field.change_buttons(x, y, self.c_x, self.c_y)
             self.sq = NoHero
         elif param.animal != NoHero and self.sq != NoHero and param.color != self.team_color:
             if self.check_distance(self.sq.animal.radius, self.c_x, self.c_y, x, y):
                 self.subtraction_health(x, y)
+                self.delete_backlight(self.c_x, self.c_y, self.sq.animal.radius)
             self.check_health(x, y)
             self.sq = NoHero
         else:
             self.sq = NoHero
+            self.delete_backlight(self.c_x, self.c_y, self.sq.animal.radius)
 
     def subtraction_health(self, x, y):
         self.game_field.list_buttons[x][y].animal.health -= \
@@ -307,6 +306,20 @@ class MyGame(arcade.View):
         if blue == 0:
             return "Red team is the winner!!!"
         return False
+
+    def make_backlight(self, x, y, r):
+        for i in range(self.game_field.get_size(0)):
+            for j in range(self.game_field.get_size(1)):
+                if i in range(x-r, x+r+1) and j in range(y-r, y+r+1) and \
+                        self.game_field.list_buttons[i][j].get_color() == (240, 220, 130):
+                    self.game_field.list_buttons[i][j].change_color((252, 194, 0))
+
+    def delete_backlight(self, x, y, r):
+        for i in range(self.game_field.get_size(0)):
+            for j in range(self.game_field.get_size(1)):
+                if i in range(x-r, x+r+1) and j in range(y-r, y+r+1) and \
+                        self.game_field.list_buttons[i][j].get_color() == (252, 194, 0):
+                    self.game_field.list_buttons[i][j].change_color((240, 220, 130))
 
 
 def main():
