@@ -267,21 +267,26 @@ class MyGame(arcade.View):
         if param == NoHero:
             return
         if param.animal != NoHero and self.sq == NoHero:
-            self.sq, self.team_color = param, param.color
-            self.c_x, self.c_y = x, y
+            self.sq, self.team_color, self.c_x, self.c_y = param, param.color, x, y
         elif param.animal == NoHero and self.sq != NoHero:
             if self.check_distance(self.sq.animal.radius, self.c_x, self.c_y, x, y):
                 self.game_field.change_buttons(x, y, self.c_x, self.c_y)
             self.sq = NoHero
         elif param.animal != NoHero and self.sq != NoHero and param.color != self.team_color:
             if self.check_distance(self.sq.animal.radius, self.c_x, self.c_y, x, y):
-                self.game_field.list_buttons[x][y].animal.health -= \
-                    self.game_field.list_buttons[self.c_x][self.c_y].animal.attack
-            if self.game_field.list_buttons[x][y].animal.health <= 0:
-                self.game_field.list_buttons[x][y].change_sq(NoHero)
+                self.subtraction_health(x, y)
+            self.check_health(x, y)
             self.sq = NoHero
         else:
             self.sq = NoHero
+
+    def subtraction_health(self, x, y):
+        self.game_field.list_buttons[x][y].animal.health -= \
+            self.game_field.list_buttons[self.c_x][self.c_y].animal.attack
+
+    def check_health(self, x, y):
+        if self.game_field.list_buttons[x][y].animal.health <= 0:
+            self.game_field.list_buttons[x][y].change_sq(NoHero)
 
     @staticmethod
     def check_distance(radius, x, y, xl, yl):
