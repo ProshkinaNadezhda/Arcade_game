@@ -37,7 +37,7 @@ class Leopard(MyHeroes):
         super().__init__()
         self.size = 0.04
         self.path = "leopard.png"
-        self.health = 5
+        self.health = 3
         self.radius = 3
         self.attack = 3
 

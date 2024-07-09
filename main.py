@@ -1,3 +1,4 @@
+from rules import *
 from all_sq import *
 
 ROW_COUNT = COLUMN_COUNT = 7
@@ -44,7 +45,7 @@ class Menu(arcade.View):
         self.rules = Rules(self)
         self.init_characters = InitCharacters(self)
         self.buttons = [(Button((s - 175.5, h2 - 22.5), (s + 175.5, h2 + 22.5), (350, 45), (240, 220, 130)),
-                         self.rules),
+                         PageOne(self)),
                         (Button((s - 175.5, h1 - 22.5), (s + 175.5, h1 + 22.5), (350, 45), (240, 220, 130)),
                          self.init_characters)]
 
@@ -64,69 +65,6 @@ class Menu(arcade.View):
             k = i[0].check(_x, _y)
             if k:
                 self.window.show_view(i[1])
-
-
-class Rules(arcade.View):
-    def __init__(self, menu):
-        super().__init__()
-        h = SCREEN_HEIGHT / 30
-        s = SCREEN_WIDTH / 10
-        self.menu = menu
-        self.rules_next = RulesNextSlide(self)
-        self.buttons = [(Button((s - 50, h - 25), (s + 50, h + 25), (100, 50), (240, 220, 130)), self.menu),
-                        (Button((s * 9 - 50, h - 25), (s * 9 + 50, h + 25), (100, 50), (240, 220, 130)),
-                         self.rules_next)]
-
-    def on_show(self):
-        arcade.set_background_color((152, 119, 123))
-
-    def on_draw(self):
-        arcade.start_render()
-        f = open('instr.txt', 'r')
-        info = f.read()
-        arcade.draw_text(info, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2,
-                         arcade.color.BLACK, font_size=20, anchor_x="center", anchor_y="center")
-        f.close()
-
-        self.buttons[0][0].draw_rect()
-        self.buttons[0][0].print_text("Back", 40)
-        self.buttons[1][0].draw_rect()
-        self.buttons[1][0].print_text("Next", 40)
-
-    def on_mouse_press(self, _x, _y, _button, _modifiers):
-        for i in self.buttons:
-            k = i[0].check(_x, _y)
-            if k:
-                self.window.show_view(i[1])
-
-
-class RulesNextSlide(arcade.View):
-    def __init__(self, rules):
-        super().__init__()
-        h = SCREEN_HEIGHT / 30
-        s = SCREEN_WIDTH / 10
-        self.rules = rules
-        self.button = (Button((s - 50, h - 25), (s + 50, h + 25), (100, 50), (240, 220, 130)), self.rules)
-
-    def on_show(self):
-        arcade.set_background_color((152, 119, 123))
-
-    def on_draw(self):
-        arcade.start_render()
-        animal = [Cat(), Kangaroo(), Leopard(), Shark(), Snake()]
-        for i in range(len(animal)):
-            arcade.Sprite(animal[i].path, animal[i].size, center_x=WIDTH, center_y=SCREEN_WIDTH - 100 - 80 * i).draw()
-            arcade.draw_text(f'имеет {animal[i].health} жизней, {animal[i].attack} мощность аттаки, '
-                             f'радиус перемещения:{animal[i].radius}', WIDTH * 1.5, SCREEN_WIDTH - 100 - 80 * i,
-                             arcade.color.BLACK, font_size=15)
-
-        self.button[0].draw_rect()
-        self.button[0].print_text("Prev", 40)
-
-    def on_mouse_press(self, _x, _y, _button, _modifiers):
-        k = self.button[0].check(_x, _y)
-        if k:
-            self.window.show_view(self.button[1])
 
 
 class InitCharacters(arcade.View):
